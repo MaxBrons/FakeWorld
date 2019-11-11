@@ -4,23 +4,32 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private float speed = 3;
+    [SerializeField] private float speed = 3;
+    private SpriteRenderer spr;
+    private Vector3 rightPos, upPos;
 
     private void Awake()
     {
-        
+        spr = GetComponent<SpriteRenderer>();
+        rightPos = new Vector3(.1f, 0, 0);
+        upPos = new Vector3(0, .1f, 0);
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.position += -rightPos * speed * Time.deltaTime;
+            spr.flipX = true;
+        }
+        if (Input.GetKey(KeyCode.S))
+            transform.position += -upPos * speed * Time.deltaTime;
         if (Input.GetKey(KeyCode.D))
-            transform.position += transform.right * speed * Time.deltaTime;
-        else if (Input.GetKey(KeyCode.A))
-            transform.position += transform.right * speed * Time.deltaTime;
-        else if (Input.GetKey(KeyCode.W))
-            transform.position += transform.right * speed * Time.deltaTime;
-        else if (Input.GetKey(KeyCode.S))
-            transform.position += transform.right * speed * Time.deltaTime;
+        {
+            transform.position += rightPos * speed * Time.deltaTime;
+            spr.flipX = false;
+        }
+        if (Input.GetKey(KeyCode.W))
+            transform.position += upPos * speed * Time.deltaTime;
     }
 }
