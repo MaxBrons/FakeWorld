@@ -9,14 +9,17 @@ public class Shooting : MonoBehaviour
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform barrel;
     [SerializeField] private Animator fireGun;
+
+    public SpriteRenderer gun;
+
+    private SpriteRenderer spr;
     private Vector2 mousePos;
     private Vector2 aimPos;
     private GameObject arm;
-    private float speed = 3;
 
     private void Awake()
     {
-
+        spr = GetComponent<SpriteRenderer>();
         arm = transform.GetChild(0).gameObject;
     }
 
@@ -28,11 +31,20 @@ public class Shooting : MonoBehaviour
 
         //Sets the rotation off the player to the mouse position
         float angle = AngleBetweenPoints(transform.position, mouseWorldPosition);
-        arm.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, angle + 90));
+        arm.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, angle + 180));
+
+        //Sprite flip
+        if (angle >= -90 && angle <= 90){
+            spr.flipX = true;
+            gun.flipY = true;
+        }
+        else{
+            spr.flipX = false; gun.flipY = false;
+        }
 
         //Weapon shooting
         if (Input.GetMouseButton(0))
-            StartCoroutine(Shoot());
+            Shoot();
     }
 
     //Returns the angle between the player and the cursor
@@ -41,16 +53,15 @@ public class Shooting : MonoBehaviour
         return Mathf.Atan2(a.y - b.y, a.x - b.x) * Mathf.Rad2Deg;
     }
 
-    private IEnumerator Shoot()
+    private void Shoot()
     {
-        while(fireGun.enabled == true)
+        if (fireGun.GetComponent<Animation>().isPlaying)
         {
-            fireGun.SetTrigger("Start");
-            Instantiate(bullet, barrel.position, barrel.rotation);
-            fireGun.ResetTrigger("Start");
-            fireGun.enabled = false;
-            yield return null;
+            fireGun.SetTrigger("Shoot");
+            Transform barrel = gun.transform.Find("Barrel").transform;
+            RaycastHit hit;
+            if (Physics.Raycast(barrel.position, barrel.forward, out hit, 30) && hit.transform.tag == "Zombie")
+                Destroy(hit.transform.gameObject);
         }
-        yield return null;
     }
 }
