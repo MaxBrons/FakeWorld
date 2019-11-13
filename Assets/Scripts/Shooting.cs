@@ -5,16 +5,14 @@ using UnityEngine;
 public class Shooting : MonoBehaviour
 {
     [SerializeField] private Camera cam;
-    [SerializeField] private GameObject weapon;
-    [SerializeField] private GameObject bullet;
     [SerializeField] private Transform barrel;
     [SerializeField] private Animator fireGun;
+    [SerializeField] private GameObject bullet;
 
     public SpriteRenderer gun;
 
+    private float angle;
     private SpriteRenderer spr;
-    private Vector2 mousePos;
-    private Vector2 aimPos;
     private GameObject arm;
 
     private void Awake()
@@ -30,7 +28,7 @@ public class Shooting : MonoBehaviour
         Vector3 mouseWorldPosition = cam.ScreenToWorldPoint(Input.mousePosition + Vector3.forward * 10f);
 
         //Sets the rotation off the player to the mouse position
-        float angle = AngleBetweenPoints(transform.position, mouseWorldPosition);
+        angle = AngleBetweenPoints(transform.position, mouseWorldPosition);
         arm.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, angle + 180));
 
         //Sprite flip
@@ -43,8 +41,10 @@ public class Shooting : MonoBehaviour
         }
 
         //Weapon shooting
-        if (Input.GetMouseButton(0))
-            Shoot();
+        if (Input.GetMouseButtonDown(0))
+            StartCoroutine(Shoot());
+
+        Debug.DrawRay(barrel.position, barrel.forward ,Color.red);
     }
 
     //Returns the angle between the player and the cursor
@@ -53,15 +53,22 @@ public class Shooting : MonoBehaviour
         return Mathf.Atan2(a.y - b.y, a.x - b.x) * Mathf.Rad2Deg;
     }
 
-    private void Shoot()
+    private IEnumerator Shoot()
     {
-        if (fireGun.GetComponent<Animation>().isPlaying)
+        if (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("GunSmoke"))
         {
             fireGun.SetTrigger("Shoot");
-            Transform barrel = gun.transform.Find("Barrel").transform;
-            RaycastHit hit;
-            if (Physics.Raycast(barrel.position, barrel.forward, out hit, 30) && hit.transform.tag == "Zombie")
-                Destroy(hit.transform.gameObject);
+            while (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("Checkpoint"))
+                yield return null;
+
+            fireGun.SetTrigger("CheckpointCleared");
+            RaycastHit2D hit = Physics2D.Raycast(barrel.position, barrel.forward, 15);
+            if (hit.collider != null && hit.collider.tag == "Zombie")
+            {
+                Debug.Log(hit.transform.position - barrel.position);
+                Destroy(hit.collider.gameObject);
+            }
+            yield return null;
         }
     }
 }

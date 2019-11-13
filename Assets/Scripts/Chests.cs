@@ -9,13 +9,18 @@ public class Chests : MonoBehaviour
     [SerializeField] private float radius;
     [SerializeField] private Image eButton;
     [SerializeField] Image[] images;
+    [SerializeField] int[] answers;
     [SerializeField] Image questionImage;
+    [SerializeField] private GameObject zombie;
+
+    public static int score = 0;
 
     private bool chestOpened = false;
     private Collider2D[] collidersInRange;
     
     private void Awake()
     {
+        questionImage = GetRandomQuestion();
         eButton.enabled = false;
     }
 
@@ -46,21 +51,18 @@ public class Chests : MonoBehaviour
         return images[i];
     }
 
-   private void OpenChest()
+    private IEnumerator OpenChest()
     {
         chestOpened = true;
-        Image qImg = GetRandomQuestion();
         questionImage.enabled = true;
-        questionImage = qImg;
-        if (Input.anyKey)
-        {
-            if (Input.GetKey(KeyCode.Y))
-                GetAwnser(0);
-            else if (Input.GetKey(KeyCode.N))
-                GetAwnser(1);
-        }
-        else
-            OpenChest();
+
+        while (!Input.GetKey(KeyCode.Y) && !Input.GetKey(KeyCode.N))
+            yield return null;
+
+        if (Input.GetKey(KeyCode.Y))
+            GetAwnser(0);
+        else if (Input.GetKey(KeyCode.N))
+            GetAwnser(1);
     }
 
     private void CloseChest()
@@ -70,8 +72,12 @@ public class Chests : MonoBehaviour
         //close UI
     }
 
-    private void GetAwnser(int i)
+    private void GetAwnser(int index)
     {
-
+        if(index == answers[index])
+            score++;
+        else
+            for (int i = 0; i < 10; i++)
+               Instantiate(zombie, transform.position, Quaternion.identity);
     }
 }
