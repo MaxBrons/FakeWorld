@@ -1,22 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Shooting : MonoBehaviour
 {
     [SerializeField] private Camera cam;
     [SerializeField] private Transform barrel;
     [SerializeField] private Animator fireGun;
-    [SerializeField] private GameObject bullet;
+    [SerializeField] private Text bullets;
 
     public SpriteRenderer gun;
 
+    private int amountOfBullets = 10;
     private float angle;
     private SpriteRenderer spr;
     private GameObject arm;
 
     private void Awake()
     {
+        bullets.text = "x" + amountOfBullets;
         spr = GetComponent<SpriteRenderer>();
         arm = transform.GetChild(0).gameObject;
     }
@@ -37,7 +40,8 @@ public class Shooting : MonoBehaviour
             gun.flipY = true;
         }
         else{
-            spr.flipX = false; gun.flipY = false;
+            spr.flipX = false;
+            gun.flipY = false;
         }
 
         //Weapon shooting
@@ -57,6 +61,14 @@ public class Shooting : MonoBehaviour
     {
         if (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("GunSmoke"))
         {
+            if (amountOfBullets >= 1)
+            {
+                amountOfBullets--;
+                bullets.text = "x" + amountOfBullets;
+            }
+            else
+                bullets.text = "Out of bullets";
+
             fireGun.SetTrigger("Shoot");
             while (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("Checkpoint"))
                 yield return null;
@@ -70,5 +82,11 @@ public class Shooting : MonoBehaviour
             }
             yield return null;
         }
+    }
+
+    public void ResetStats()
+    {
+        amountOfBullets = 10;
+        bullets.text = "x" + amountOfBullets;
     }
 }

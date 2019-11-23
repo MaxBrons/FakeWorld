@@ -5,47 +5,47 @@ using UnityEngine.UI;
 
 public class Chests : MonoBehaviour
 {
-    [SerializeField] ContactFilter2D contactFilter;
     [SerializeField] private float radius;
-    [SerializeField] private Image eButton;
-    [SerializeField] Image[] images;
+    //[SerializeField] private Image eButton;
+    [SerializeField] Sprite[] images;
     [SerializeField] int[] answers;
-    [SerializeField] Image questionImage;
+    [SerializeField] private LayerMask layer;
     [SerializeField] private GameObject zombie;
+    private Image questionImage;
+    private Text answerText;
 
     public static int score = 0;
 
     private bool chestOpened = false;
-    private Collider2D[] collidersInRange;
     
     private void Awake()
     {
-        questionImage = GetRandomQuestion();
-        eButton.enabled = false;
+        questionImage = GameObject.FindGameObjectWithTag("UI").transform.GetChild(0).GetComponent<Image>();
+        answerText = GameObject.FindGameObjectWithTag("UI").transform.GetChild(1).GetComponent<Text>();
+        questionImage.sprite = GetRandomQuestion();
+        //eButton.enabled = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Physics2D.OverlapCircle(transform.position, radius, contactFilter, collidersInRange);
-        if (collidersInRange.Length > 0)
+        if (Physics2D.OverlapCircle(transform.position, radius, layer))
         {
-            for (int i = 0; i < collidersInRange.Length; i++)
-            {
-                if(collidersInRange[i].tag == "Player")
-                {
-                    eButton.enabled = true;
-                    if (Input.GetKey(KeyCode.E))
-                        OpenChest();
-                        
-                    if (chestOpened && Input.GetKey(KeyCode.Escape))
-                        CloseChest();
-                }
-            }
+            Debug.Log(1);
+            //eButton.enabled = true;
+            if (Input.GetKey(KeyCode.E))
+                StartCoroutine(OpenChest());
+
+            if (chestOpened && Input.GetKey(KeyCode.Escape))
+                CloseChest();
+        }
+        else
+        {
+            //eButton.enabled = false;
         }
     }
 
-    private Image GetRandomQuestion()
+    private Sprite GetRandomQuestion()
     {
         int i = Random.Range(0, images.Length);
         return images[i];
@@ -59,6 +59,7 @@ public class Chests : MonoBehaviour
         while (!Input.GetKey(KeyCode.Y) && !Input.GetKey(KeyCode.N))
             yield return null;
 
+        answerText.enabled = true;
         if (Input.GetKey(KeyCode.Y))
             GetAwnser(0);
         else if (Input.GetKey(KeyCode.N))
@@ -69,6 +70,7 @@ public class Chests : MonoBehaviour
     {
         chestOpened = false;
         questionImage.enabled = false;
+        answerText.enabled = false;
         //close UI
     }
 
@@ -77,7 +79,8 @@ public class Chests : MonoBehaviour
         if(index == answers[index])
             score++;
         else
-            for (int i = 0; i < 10; i++)
-               Instantiate(zombie, transform.position, Quaternion.identity);
+        Instantiate(zombie, transform.position, Quaternion.identity);
+        questionImage.enabled = false;
+        answerText.enabled = false;
     }
 }
