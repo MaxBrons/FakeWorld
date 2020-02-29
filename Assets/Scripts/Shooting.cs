@@ -45,7 +45,7 @@ public class Shooting : MonoBehaviour
         }
 
         //Weapon shooting
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && amountOfBullets > 0)
             StartCoroutine(Shoot());
 
         Debug.DrawRay(barrel.position, barrel.forward ,Color.red);
@@ -59,28 +59,31 @@ public class Shooting : MonoBehaviour
 
     private IEnumerator Shoot()
     {
-        if (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("GunSmoke"))
+        if (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("GunSmoke") && bullets.text != "Reloading...")
         {
-            if (amountOfBullets >= 1)
+            if (amountOfBullets > 1)
             {
                 amountOfBullets--;
                 bullets.text = "x" + amountOfBullets;
+
+                //shoots a ray to check if it hit a enemy
+                fireGun.SetTrigger("Shoot");
+                while (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("Checkpoint"))
+                    yield return null;
+
+                fireGun.SetTrigger("CheckpointCleared");
+                RaycastHit2D hit = Physics2D.Raycast(barrel.position, barrel.forward, 15);
+                if (hit.collider != null && hit.collider.tag == "Zombie")
+                {
+                    Destroy(hit.collider.gameObject);
+                }
             }
             else
-                bullets.text = "Out of bullets";
-
-            fireGun.SetTrigger("Shoot");
-            while (!fireGun.GetCurrentAnimatorStateInfo(0).IsName("Checkpoint"))
-                yield return null;
-
-            fireGun.SetTrigger("CheckpointCleared");
-            RaycastHit2D hit = Physics2D.Raycast(barrel.position, barrel.forward, 15);
-            if (hit.collider != null && hit.collider.tag == "Zombie")
             {
-                Debug.Log(hit.transform.position - barrel.position);
-                Destroy(hit.collider.gameObject);
+                bullets.text = "Reloading...";
+                yield return new WaitForSeconds(2f);
+                ResetStats();
             }
-            yield return null;
         }
     }
 

@@ -8,8 +8,9 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float radius;
     [SerializeField] float time;
     [SerializeField] private LayerMask layer;
+    [SerializeField] private LayerMask enemyLayer;
     private SpriteRenderer spr;
-    private GameObject arm;
+    private Transform arm;
     private Transform player;
     private Animator walkAnim;
     private bool isTakinDamage = false;
@@ -18,7 +19,7 @@ public class EnemyController : MonoBehaviour
     private void Awake()
     {
         spr = GetComponent<SpriteRenderer>();
-        arm = transform.GetChild(0).gameObject;
+        arm = transform.GetChild(0);
         walkAnim = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player").transform;
     }
@@ -29,11 +30,8 @@ public class EnemyController : MonoBehaviour
 
         if (Physics2D.OverlapCircle(transform.position, radius, layer))
         {
-            walkAnim.SetTrigger("Move"); ;
             if ((player.transform.position - transform.position).sqrMagnitude > .2f)
             {
-                transform.position = Vector2.MoveTowards(transform.position, player.position, time * Time.deltaTime);
-
                 //Face the players direction
                 Vector3 dir = player.transform.position - arm.transform.position;
                 dir.Normalize();
@@ -45,6 +43,10 @@ public class EnemyController : MonoBehaviour
                     spr.flipX = true;
                 else
                     spr.flipX = false;
+
+                //Moves the zombie towards the player
+                walkAnim.SetTrigger("Move");
+                transform.position = Vector2.MoveTowards(transform.position, player.position, time * Time.deltaTime);
             }
             else if (timer <= 0)
             {

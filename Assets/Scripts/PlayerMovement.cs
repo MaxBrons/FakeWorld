@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float speed = 3;
     [SerializeField] private Text amountOfLives;
-    [SerializeField] private GameManager gameManager;
 
     private int health = 5;
     private Animator walkAnim;
@@ -45,13 +45,11 @@ public class PlayerMovement : MonoBehaviour
             amountOfLives.text = "x" + health.ToString();
         }
         else
-            gameManager.ResetGame();
+            ResetGame();
     }
 
-    public void ResetStats()
+    private void ResetGame()
     {
-        transform.position = new Vector3(0, -1, 0);
-        health = 5;
-        amountOfLives.text = "x" + health.ToString();
+        SceneManager.LoadScene(0);
     }
 }
